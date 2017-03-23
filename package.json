@@ -1,0 +1,34 @@
+{
+  "name": "conditional-middleware",
+  "version": "0.0.0",
+  "description": "Conditional, composable middleware for connect, express, and other soon-to-be available server modules.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha",
+    "publish": "git push origin --tags && git push origin",
+    "release:prerelease": "npm version prerelease && npm publish",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DesignByOnyx/conditional-middleware.git"
+  },
+  "keywords": [
+    "express",
+    "connect",
+    "middleware"
+  ],
+  "author": "Ryan Wheale",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/DesignByOnyx/conditional-middleware/issues"
+  },
+  "homepage": "https://github.com/DesignByOnyx/conditional-middleware#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "rewire": "^2.5.2"
+  }
+}
