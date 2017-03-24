@@ -181,4 +181,27 @@ describe('conditionalMiddleware', () => {
 			})
 		});
 	});
+
+	describe('nesting conditionals', () => {
+		it('works', done => {
+			const middleware = conditional(() => true, [
+				(req, res, next) => {
+					req.foo = true;
+					next();
+				},
+				conditional(() => true, [
+					(req, res, next) => {
+						req.bar = true;
+						next();
+					}
+				]),
+				(req, res, next) => {
+					assert.ok(req.foo, 'foo is set');
+					assert.ok(req.bar, 'bar is set');
+					next();
+				}
+			]);
+			middleware({}, {}, done);
+		});
+	});
 });

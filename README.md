@@ -121,7 +121,7 @@ app.use(conditional(() => true, [
 ], CONTEXT);
 ```
 
-## But what if the condtion returns false
+## But what if the condtion returns false?
 
 Other modules like [express-conditional-middleware](https://www.npmjs.com/package/express-conditional-middleware) accept a "failure" function for when the condition fails. However, this is not necessary becuase the very next middleware will always run when the condition fails. Continuing with the basic example above, here is how you might handle a simple failure scenario:
 
@@ -145,4 +145,32 @@ app.use((req, res, next) => {
 	    // something went foobar
 	}
 });
+```
+
+## What about nesting?
+
+Yup, that works too!
+
+```js
+const express = require('express');
+const conditional = require('conditional-middleware');
+
+const app = express();
+app.use(conditional(() => true, [ 
+    (req, res, next) => {
+    	req.foo = true;
+    	next();
+    },
+    conditional(() => true, [
+    	(req, res, next) => {
+    		req.bar = true;
+    		next();
+    	}
+    ]),
+    (req, res, next) => {
+    	assert.ok(req.foo, 'foo is set');
+    	assert.ok(req.bar, 'bar is set');
+    	next()
+    }
+]));
 ```
