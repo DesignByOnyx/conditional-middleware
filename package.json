@@ -1,6 +1,6 @@
 {
   "name": "conditional-middleware",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Conditional, composable middleware for connect, express, and other soon-to-be available server modules.",
   "main": "src/index.js",
   "scripts": {
