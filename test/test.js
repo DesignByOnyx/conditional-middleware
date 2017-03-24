@@ -67,14 +67,17 @@ describe('chainMiddleware helper', () => {
 
 	it('works with error handler middleware (exactly 4 args)', done => {
 		const middleware1 = (req, res, next) => {
-			next('error')
+			next({ message: 'error' });
 		};
 		const middleware2 = (err, req, res, next) => {
-			assert.equal(err, 'error', 'got the error');
-			done();
+			err.message = 'very bad error';
+			next(err);
 		};
 		const reducer = chainMiddleware({}, {});
-		[middleware1, middleware2].reduce(reducer, Promise.resolve()).catch(done);
+		[middleware1, middleware2].reduce(reducer, Promise.resolve()).catch(err => {
+			assert.equal(err.message, 'very bad error', 'got the error');
+			done();
+		});
 	});
 });
 
@@ -85,10 +88,10 @@ describe('conditionalMiddleware', () => {
 	});
 
 	it('works when the condition returns a boolean true', done => {
-		const middleware = conditional(() => true, [() => {
-			done();
+		const middleware = conditional(() => true, [(req, res, next) => {
+			next();
 		}]);
-		middleware({}, {});
+		middleware({}, {}, done);
 	});
 
 	it('skips when the condition returns a boolean false', done => {
@@ -99,8 +102,8 @@ describe('conditionalMiddleware', () => {
 	});
 
 	it('works when the condition returns a promise true', done => {
-		const middleware = conditional(() => Promise.resolve(true), [() => {
-			done();
+		const middleware = conditional(() => Promise.resolve(true), [(req, res, next) => {
+			next();
 		}]);
 		middleware({}, {}, done);
 	});
@@ -113,7 +116,7 @@ describe('conditionalMiddleware', () => {
 	});
 
 	it('calls the middleware in order if the condition passes', done => {
-		const middleware = conditional(req => true, [
+		const middleware = conditional(() => true, [
 			(req, res, next) => {
 				if (req.mw2) {
 					next(new Error('should not have hit middleware 2 yet!'));
@@ -140,8 +143,6 @@ describe('conditionalMiddleware', () => {
 		]);
 		middleware({}, {}, done);
 	});
-
-
 
 	it('does not run subsequent middleware chains within the same "context"', done => {
 		const CONTEXT = 'arbitrary_context';

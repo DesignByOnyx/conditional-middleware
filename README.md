@@ -1,6 +1,6 @@
 # conditional-middleware
 
-This module allows you to compose a chain of middleware based on a condition. If the condition fails, the middleware does not execute - not even as a wrapper around `next()` calls.
+Compose chains of middleware based on a condition. If the condition fails, the middleware does not execute - not even as a wrapper around `next()` calls.
 
 ```
 npm install conditional-middleware --save
@@ -20,7 +20,7 @@ This module generates [connect-friendly](https://github.com/senchalabs/connect#m
 
 ## Basic Usage
 
-In the following example, if `shouldHandleRequest` returns **false**, middleware1 and middleware2 will not execute.
+In the following example, if `shouldHandleRequest` returns **false**, _middleware1_ and _middleware2_ will not execute.
 
 ```js
 const express = require('express');
@@ -47,9 +47,9 @@ function shouldHandleRequest (req) {
 }
 ```
 
-## Use a "context" for `if/else if` behavior
+## Use a "context" for ` if/else if ` behavior
 
-Consider a situation where you want to have multiple conditions but only want the first one that returns **true**. This type of behavior is availble by creating a "context". In the following example, as soon as one condition returns **true**, none of the other conditions are even checked.
+Consider a situation where you want to have multiple conditions but only want the first one that returns **true**. This type of behavior is availble by creating a "context". In the following example, as soon as one condition returns **true**, none of the other conditions are checked.
 
 ```js
 const express = require('express');
@@ -129,13 +129,13 @@ Other modules like [express-conditional-middleware](https://www.npmjs.com/packag
 const express = require('express');
 const conditional = require('conditional-middleware');
 
-function shouldHandleRequest (req) {
+function alwaysFalse (req) {
 	req.foobar = true; // set a custom property
 	return false;
 }
 
 const app = express();
-app.use(conditional(shouldHandleRequest, [ 
+app.use(conditional(alwaysFalse, [ 
     thisWillNeverRun
 ]));
 
@@ -149,7 +149,7 @@ app.use((req, res, next) => {
 
 ## What about nesting?
 
-Yup, that works too!
+Yup, that works too! Remember, the `condtional` function will always return [connect-friendly](https://github.com/senchalabs/connect#mount-middleware) middleware, allowing you to nest conditionals as deep as you want.
 
 ```js
 const express = require('express');
@@ -165,7 +165,8 @@ app.use(conditional(() => true, [
     	(req, res, next) => {
     		req.bar = true;
     		next();
-    	}
+    	},
+    	conditional(...)
     ]),
     (req, res, next) => {
     	assert.ok(req.foo, 'foo is set');
@@ -174,3 +175,8 @@ app.use(conditional(() => true, [
     }
 ]));
 ```
+
+## What lies ahead?
+
+- [Koa](https://github.com/koajs/koa) support - [Vote on the issue here](https://github.com/DesignByOnyx/conditional-middleware/issues/1)
+- A new API? - [Cast your opinions here](https://github.com/DesignByOnyx/conditional-middleware/issues/2)
