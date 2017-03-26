@@ -1,6 +1,6 @@
 # conditional-middleware
 
-Compose chains of middleware based on a condition. If the condition fails, the middleware does not execute - not even as a wrapper around `next()` calls.
+This very lightweight module allows you to compose chains of middleware based on a condition. If the condition fails, the middleware chain does not execute - not even as a wrapper around `next()` calls.
 
 ```
 npm install conditional-middleware --save
@@ -8,17 +8,32 @@ npm install conditional-middleware --save
 
 **Supported Middleware**
 
-This module generates [connect-friendly](https://github.com/senchalabs/connect#mount-middleware) middleware and should be compatible with libraries like [Express](https://expressjs.com/), [flatiron/union](https://github.com/flatiron/union), et al. If you want support for others like Koa, please [create an issue](https://github.com/DesignByOnyx/conditional-middleware/issues) and I will do my best to add support as quickly as possible. 
+ - **[connect-friendly](https://github.com/senchalabs/connect#mount-middleware)** -  [Express](https://expressjs.com/), [flatiron/union](https://github.com/flatiron/union), et al. 
 
-```
-// connect-friendly middleware:
-(req, res, next) => { ... }
-(err, req, res, next) => { ... } //-> must have exactly 4 arguments
-```
+	```js
+	// connect-friendly middleware:
+	(req, res, next) => { ... }
+	(err, req, res, next) => { ... } //-> must have exactly 4 arguments
+	```
+ - **[Koa]()** - Since KOA is so different, you must require a different file. Everything else is the same. **Note** - you must use use Node 7.6+ or Babel per Koa's requirements.
 
-> **Note:** I made this module with zero dependencies, so you can just copy and paste the code and modify if you don't want to wait on me. I ask that you please help make this better by submitting an issue so I know what you're wanting.
+	```js
+	// koa users must include like this
+	const conditional = require('conditional-middleware/koa');
+	
+	// koa style middleware
+	(ctx, next) => { ... }
+	```
 
 ## Basic Usage
+___
+> **Koa Users:** The following examples use express. Anywhere you see '_express_' can be replaced with '_koa_'. Anywhere you see express-style middleware can be replaced with koa-style middleware. Also, remember you need to do this:
+>
+>   
+> ```js
+> const conditional = require('conditional-middleware/koa');
+> ```
+___
 
 In the following example, if `shouldHandleRequest` returns **false**, _middleware1_ and _middleware2_ will not execute.
 
@@ -39,7 +54,7 @@ app.use(conditional(shouldHandleRequest, [
 
 ### Condition methods can return a promise
 
-In the example above, `shouldHandleRequest` can return a promise:
+In the example above, `shouldHandleRequest` can return a promise. The promise must **`resolve`** to truthy or falsy. **You should never use `reject` to mean "condition failed"**.
 
 ```js
 function shouldHandleRequest (req) {
@@ -84,43 +99,6 @@ conditional.createContext(_conditional => {
 });
 ```
 
-### Create your own context
-
-Instead of using the `createContext` method above, you can create your own context by passing a 3rd param. The following code is equivalent to the example above:
-
-```js
-const express = require('express');
-const conditional = require('conditional-middleware');
-
-// context passed as third parameter (see below)
-const CONTEXT = "random_" + Math.random().slice(3);
-
-function isGithubWebhook (req) {
-	return req.get('x-github-event');
-}
-function isBasicAuth (req) {
-	return req.get('Authorization').indexOf('Basic') === 0;
-}
-
-const app = express();
-app.use(conditional(isGithubWebhook, [
-	validateGithubRequest,
-	processGithubWebhook, 
-	middleware_1,
-	...
-], CONTEXT);
-// else if
-app.use(conditional(isBasicAuth, [
-	validateAuthCredentials, 
-	middleware_2,
-	...
-], CONTEXT);
-// else
-app.use(conditional(() => true, [
-	sendUnauthorizedResponse
-], CONTEXT);
-```
-
 ## But what if the condtion returns false?
 
 Other modules like [express-conditional-middleware](https://www.npmjs.com/package/express-conditional-middleware) accept a "failure" function for when the condition fails. However, this is not necessary becuase the very next middleware will always run when the condition fails. Continuing with the basic example above, here is how you might handle a simple failure scenario:
@@ -149,7 +127,7 @@ app.use((req, res, next) => {
 
 ## What about nesting?
 
-Yup, that works too! Remember, the `condtional` function will always return [connect-friendly](https://github.com/senchalabs/connect#mount-middleware) middleware, allowing you to nest conditionals as deep as you want.
+Yup, that works too! The `condtional` function will always return middleware, allowing you use it anywhere where you would use normally use middleware.
 
 ```js
 const express = require('express');
@@ -178,5 +156,4 @@ app.use(conditional(() => true, [
 
 ## What lies ahead?
 
-- [Koa](https://github.com/koajs/koa) support - [Vote on the issue here](https://github.com/DesignByOnyx/conditional-middleware/issues/1)
 - A new API? - [Cast your opinions here](https://github.com/DesignByOnyx/conditional-middleware/issues/2)

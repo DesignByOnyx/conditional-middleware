@@ -1,7 +1,7 @@
 'use strict';
 
 // Converts a node-style callback function to a promise
-// This was easy enough to implement without needing another dependency
+// This was easy enough to implement without needing a dependency
 const promisify = fn => {
 	return (...args) => {
 		return new Promise((resolve, reject) => {
@@ -13,7 +13,7 @@ const promisify = fn => {
 	};
 };
 
-// Generates a reducer function for chaining middleware
+// Generates a reducer function for chaining middleware via promises
 const chainMiddleware = (req, res) => {
 	return (promise, middleware) => {
 		const pMiddleware = promisify(middleware);
@@ -25,7 +25,7 @@ const chainMiddleware = (req, res) => {
 				.catch(err => pMiddleware(err, req, res));
 		}
 		// (req, res, next) => { ... }
-		return promise.then(() => pMiddleware(req, res))
+		return promise.then(() => pMiddleware(req, res));
 	};
 };
 
@@ -36,16 +36,10 @@ const conditionalMiddleware = (condition, middlewares, context) => {
 		if (context && req[context] === true) {
 			return next();
 		}
-		let result = condition(req);
-		if (typeof result.then !== 'function') {
-			result = Promise.resolve(result);
-		}
-		result.then(truthy => {
+		Promise.resolve(condition(req)).then(truthy => {
 			if (truthy) {
-				if (context) {
-					// tells others to skip
-					req[context] = true;
-				}
+				// tells others to skip
+				if (context) req[context] = true;
 				return middlewares.reduce(chainMiddleware(req, res), Promise.resolve())
 				.then(next)
 				.catch(next);
@@ -56,10 +50,5 @@ const conditionalMiddleware = (condition, middlewares, context) => {
 	};
 };
 
-conditionalMiddleware.createContext = fn => {
-	// only needs to be pseudo-random
-	const unguessable = Math.random().toString(36).slice(2);
-	fn((condition, middlewares) => conditionalMiddleware(condition, middlewares, unguessable));
-};
-
+require('./create-context')(conditionalMiddleware);
 module.exports = conditionalMiddleware;

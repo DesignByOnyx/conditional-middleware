@@ -4,7 +4,7 @@
   "description": "Conditional, composable middleware for connect, express, and other soon-to-be available server modules.",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha $(find ./test -name 'test.js') --check-leaks",
     "publish": "git push origin --tags && git push origin",
     "release:prerelease": "npm version prerelease && npm publish",
     "release:patch": "npm version patch && npm publish",
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/DesignByOnyx/conditional-middleware#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "compare-versions": "^3.0.0",
     "mocha": "^3.2.0",
     "rewire": "^2.5.2"
   }
